@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"> </lang>
+
+<head>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title> Films </title>
+</head>
+
+<body class="background"> 
+    
+<h1> Films  </h1>
+
+<ul>        
+{% for film in films %}
+
+    <li> {{film.film}} ({{film.release_year}}) </li>
+    
+{% endfor %}
+</ul>
+
+</body>

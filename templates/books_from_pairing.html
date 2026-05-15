@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<link rel="stylesheet" href="/static/styles.css">
+
+<head>
+<body class="background"> 
+<title> Books </title>
+</head>
+
+<h1 class="h1"> Books  </h1>
+
+    <div> 
+    <ul>
+       
+   </div>
+    <div class="flex-container">
+      <div class="column"> {{ books[0].title }} by {{ books[0].author }} <a target="_blank">
+  <img src="https://media1.tenor.com/m/KznoJDBlHhkAAAAd/macaco-camaco.gif" alt="Forest"> </a></div>
+      <div class="column"> {{books[1].title}} by {{books[1].author}} <a target="_blank">
+  <img src="https://m.media-amazon.com/images/I/51rL1JO2eRL._SY445_SX342_ML2_.jpg" alt="Forest"> </a></div>
+      <div class="column"> {{books[2].title}} by {{books[2].author}} <a target="_blank">
+  <img src="https://reactormag.com/wp-content/uploads/2016/03/Barnhill_GirlWhoDrankMoon-crop.jpg" alt="Forest"> </a></div>
+      <div class="column"> {{books[3].title}} by {{books[3].author}} <a target="_blank">
+  <img src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTqTz4hOmMPJi5jr-QkfvTII6AIV_XZBnRmFcvhlHfqtqb-eYeRk1RwBltM9hXo4ymUsrvLIWUHNMjNyMhtVmlf1Ded76TYyvo0GtfDFVB7&usqp=CAc" alt="Forest"> </a></div>
+   
+     </div>
+   </div>
+
+   {%for book in books %}
+   <p>
+    {{ book.title }} by {{ book.author }}
+   </p>
+   {% endfor %}
+
+
+
+
+   <form class="form" method="POST" action="/books">
+
+    <input type="text" name="title" placeholder="title"><br>
+    <input type="text" name="author" placeholder="author"><br>
+    <input type="submit" value="Submit">
+
+   </form>
+
+ 
+
+</body>

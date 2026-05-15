@@ -1,0 +1,61 @@
+/* Index */
+
+.background{
+    background-color: #f5f5f5;
+    margin: 20px; 
+    padding: 40px; 
+
+}
+
+.h1{
+    text-align: center;
+    color:blue; 
+}
+
+.text{
+    font-size: 18;
+    line-height: 1.6;
+}
+
+.welcome{
+
+    text-align: center;
+    color: blueviolet;
+    margin-top: 50px;
+}
+
+.address{
+    bottom: 0%;
+    position: fixed;
+    margin-bottom: 30px;
+}
+
+.books{
+    margin-top: 100px;
+}
+
+.flex-container {
+  display: flex;       /* Activates Flexbox */
+  gap: 20px;           /* Space between columns */
+  margin-bottom: 25px;
+}
+
+.column {
+   border-radius: 15px;
+  flex: 1;             /* All columns will have the same width */
+  background: rgb(211, 211, 211);
+  padding: 10px;
+}
+
+img {
+    border-radius: 15px;
+    border: 2px solid #333; 
+    width: 50px;
+    height: 50px;
+    margin-left: 35px; 
+}
+
+/* Books */
+.form{
+    padding: 25; /* NOT WORKING */
+}

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Environment Variables &amp; Docker — Explained</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Lora:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --ink: #1a1916;
+    --ink-2: #4a4845;
+    --ink-3: #7a7875;
+    --accent: #2d5be3;
+    --accent-light: #e8eeff;
+    --teal: #0f6e56;
+    --teal-light: #e1f5ee;
+    --purple: #534ab7;
+    --purple-light: #eeedfe;
+    --coral: #993c1d;
+    --coral-light: #faece7;
+    --border: #e2dfd8;
+    --code-bg: #f0ede8;
+    --radius: 10px;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.75;
+    padding: 40px 20px 80px;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 24px;
+    margin-bottom: 48px;
+  }
+
+  header .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Lora', serif;
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  h2 {
+    font-family: 'Lora', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 48px 0 16px;
+    color: var(--ink);
+  }
+
+  h3 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 32px 0 10px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  p { margin-bottom: 16px; color: var(--ink-2); }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 28px 0;
+  }
+
+  .diagram-card svg { width: 100%; height: auto; display: block; }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  pre {
+    background: #1e1c1a;
+    color: #e8e4dc;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 20px 0;
+  }
+
+  pre .comment { color: #7a7565; }
+  pre .keyword { color: #8fb4e8; }
+  pre .string  { color: #a8cc8c; }
+  pre .value   { color: #e5a96b; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-light);
+    padding: 14px 18px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 24px 0;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  .callout strong { color: var(--accent); }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .option-card {
+    border-radius: var(--radius);
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .option-card .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .option-card h4 {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .opt-1 { background: var(--teal-light); }
+  .opt-1 .badge, .opt-1 h4 { color: var(--teal); }
+  .opt-1 p { color: #2a5040; }
+
+  .opt-2 { background: var(--purple-light); }
+  .opt-2 .badge, .opt-2 h4 { color: var(--purple); }
+  .opt-2 p { color: #3a3470; }
+
+  .opt-3 { background: var(--coral-light); }
+  .opt-3 .badge, .opt-3 h4 { color: var(--coral); }
+  .opt-3 p { color: #6b2a12; }
+
+  @media (max-width: 600px) {
+    .option-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="label">Makers Academy · Docker deployment</div>
+    <h1>Environment Variables &amp; Docker — Explained</h1>
+  </header>
+
+  <!-- SECTION 1 -->
+  <h2>What is an environment variable?</h2>
+
+  <p>Think of an environment variable as a <strong>setting</strong> your app reads when it starts up — like a configuration dial you can adjust without changing the code itself.</p>
+
+  <p>A simple analogy: imagine your app is a coffee machine. The <em>code</em> is the machine's internal workings, but environment variables are like the settings panel — you can dial in "make 2 cups" or "make 10 cups" without rewiring anything inside.</p>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img">
+      <title>Environment variable analogy</title>
+      <desc>Code is like a fixed coffee machine; environment variables are the settings panel you can change freely.</desc>
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- Machine body -->
+      <rect x="60" y="45" width="150" height="140" rx="12" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.8"/>
+      <rect x="80" y="68" width="110" height="55" rx="6" fill="#fff" stroke="#b0d8cd" stroke-width="0.5"/>
+      <text x="135" y="91" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="13" fill="#4a4845">☕ brewing</text>
+      <text x="135" y="109" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="13" fill="#4a4845">logic</text>
+      <rect x="100" y="144" width="70" height="26" rx="13" fill="#0f6e56"/>
+      <text x="135" y="162" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#fff">your code</text>
+      <text x="135" y="205" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#7a7875">Fixed — don't change this</text>
+      <!-- Arrow -->
+      <line x1="218" y1="115" x2="295" y2="115" stroke="#aaa" stroke-width="1.2" marker-end="url(#arr)"/>
+      <text x="256" y="108" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#7a7875">reads</text>
+      <!-- Settings panel -->
+      <rect x="305" y="45" width="330" height="140" rx="12" fill="#eeedfe" stroke="#534ab7" stroke-width="0.8"/>
+      <text x="470" y="76" text-anchor="middle" font-family="'Lora',serif" font-size="15" font-weight="600" fill="#3c3489">Settings panel</text>
+      <rect x="322" y="90" width="140" height="42" rx="6" fill="#fff" stroke="#ccc" stroke-width="0.5"/>
+      <text x="334" y="106" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#7a7875">DATABASE_NAME</text>
+      <text x="334" y="123" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="500" fill="#1a1916">book_store</text>
+      <rect x="477" y="90" width="140" height="42" rx="6" fill="#fff" stroke="#ccc" stroke-width="0.5"/>
+      <text x="489" y="106" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#7a7875">DATABASE_HOST</text>
+      <text x="489" y="123" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="500" fill="#1a1916">db-container</text>
+      <text x="470" y="170" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#7a7875">Change these freely — no code edits needed</text>
+    </svg>
+  </div>
+
+  <h3>Why do you need them here?</h3>
+
+  <p>Your app needs to connect to a database, and to do that it needs to know two things:</p>
+  <ul style="margin: 0 0 16px 24px; color: var(--ink-2);">
+    <li><strong>What's the database called?</strong> → <code>DATABASE_NAME</code></li>
+    <li><strong>Where is the database?</strong> → <code>DATABASE_HOST</code></li>
+  </ul>
+
+  <p>Right now, those values are hardcoded defaults in your app (<code>book_store_test</code> and probably <code>localhost</code>). But when you deploy with Docker, both of those answers change — so instead of editing the code every time, you pass in environment variables to override the defaults.</p>
+
+  <hr>
+
+  <!-- SECTION 2 -->
+  <h2>The three options</h2>
+
+  <div class="option-grid">
+    <div class="option-card opt-1">
+      <div class="badge">Option 1</div>
+      <h4>Bake into Dockerfile</h4>
+      <p>Values get built into the image. Use when the value never changes between environments.</p>
+      <p style="margin-top:8px"><strong>✓ Your situation</strong></p>
+    </div>
+    <div class="option-card opt-2">
+      <div class="badge">Option 2</div>
+      <h4>Pass at runtime</h4>
+      <p>Use <code>-e</code> or <code>--env-file</code> when the value differs between dev, staging, and prod.</p>
+      <p style="margin-top:8px">For later, when you scale up.</p>
+    </div>
+    <div class="option-card opt-3">
+      <div class="badge">Option 3</div>
+      <h4>Runtime — secrets</h4>
+      <p>Passwords, API keys. Never bake these in — they're visible in the image history.</p>
+      <p style="margin-top:8px">⚠ Security risk if ignored.</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" role="img">
+      <title>Three options for setting environment variables in Docker</title>
+      <desc>Option 1 bakes values into the Dockerfile for stable settings. Option 2 passes them at runtime for per-environment values. Option 3 passes secrets at runtime to keep them out of the image.</desc>
+      <!-- Option 1 -->
+      <rect x="30" y="30" width="190" height="230" rx="12" fill="#e1f5ee" stroke="#0f6e56" stroke-width="0.8"/>
+      <text x="125" y="62" text-anchor="middle" font-family="'Lora',serif" font-size="15" font-weight="600" fill="#085041">Option 1</text>
+      <text x="125" y="82" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#2a5040">Bake into Dockerfile</text>
+      <rect x="48" y="98" width="154" height="50" rx="6" fill="#fff" stroke="#b0d8cd" stroke-width="0.5"/>
+      <text x="125" y="117" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#7a7875">ENV DATABASE_NAME</text>
+      <text x="125" y="136" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="#1a1916">  book_store</text>
+      <text x="125" y="173" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#2a5040">Use when the value</text>
+      <text x="125" y="190" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#2a5040">never changes between</text>
+      <text x="125" y="207" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#2a5040">environments</text>
+      <text x="125" y="242" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" font-weight="600" fill="#0f6e56">✓ Your situation</text>
+      <!-- Option 2 -->
+      <rect x="245" y="30" width="190" height="230" rx="12" fill="#eeedfe" stroke="#534ab7" stroke-width="0.8"/>
+      <text x="340" y="62" text-anchor="middle" font-family="'Lora',serif" font-size="15" font-weight="600" fill="#26215c">Option 2</text>
+      <text x="340" y="82" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#3a3470">Pass at runtime</text>
+      <rect x="263" y="98" width="154" height="50" rx="6" fill="#fff" stroke="#ccc" stroke-width="0.5"/>
+      <text x="340" y="117" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#7a7875">docker run -e</text>
+      <text x="340" y="136" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="#1a1916">  DB=staging_db</text>
+      <text x="340" y="173" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#3a3470">Use when the value</text>
+      <text x="340" y="190" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#3a3470">differs between dev,</text>
+      <text x="340" y="207" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#3a3470">staging, and prod</text>
+      <text x="340" y="242" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#534ab7">For later, when you scale up</text>
+      <!-- Option 3 -->
+      <rect x="460" y="30" width="190" height="230" rx="12" fill="#faece7" stroke="#993c1d" stroke-width="0.8"/>
+      <text x="555" y="62" text-anchor="middle" font-family="'Lora',serif" font-size="15" font-weight="600" fill="#4a1b0c">Option 3</text>
+      <text x="555" y="82" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#6b2a12">Runtime — secrets only</text>
+      <rect x="478" y="98" width="154" height="50" rx="6" fill="#fff" stroke="#ccc" stroke-width="0.5"/>
+      <text x="555" y="117" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#7a7875">docker run -e</text>
+      <text x="555" y="136" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="#1a1916">  PASSWORD=***</text>
+      <text x="555" y="173" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#6b2a12">Passwords, API keys —</text>
+      <text x="555" y="190" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#6b2a12">never bake these in,</text>
+      <text x="555" y="207" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" fill="#6b2a12">they're in the image history</text>
+      <text x="555" y="242" text-anchor="middle" font-family="'Source Sans 3',sans-serif" font-size="12" font-weight="600" fill="#993c1d">⚠ Security risk if ignored</text>
+    </svg>
+  </div>
+
+  <div class="callout">
+    <strong>Why Option 1 is fine for you right now:</strong> since your Docker setup always uses the same database host and name, the values won't change between runs. So it's safe and simple to write them directly into the Dockerfile — no need for the extra complexity of Options 2 or 3 yet.
+  </div>
+
+  <hr>
+
+  <!-- SECTION 3 -->
+  <h2>Setting env vars in a Dockerfile</h2>
+
+  <p>You use the <code>ENV</code> instruction. It looks like this:</p>
+
+<pre><span class="keyword">FROM</span> python:3.11
+<span class="keyword">ENV</span> <span class="value">DATABASE_NAME</span>=book_store
+<span class="keyword">ENV</span> <span class="value">DATABASE_HOST</span>=db</pre>
+
+  <p>When Docker builds your image, those values get baked in — every container you run from that image will automatically have those variables available.</p>
+
+  <h3>How your app reads them</h3>
+
+  <p>Your app code doesn't care <em>how</em> the variable was set — it just reads it by name. In Python it looks like this:</p>
+
+<pre><span class="keyword">import</span> os
+db_name = os.environ.get(<span class="string">"DATABASE_NAME"</span>, <span class="string">"book_store_test"</span>)</pre>
+
+  <p>The second argument (<code>"book_store_test"</code>) is the <em>default</em> — what the app falls back to if no environment variable is found. That's why your deployed app was using <code>book_store_test</code> before: no variable was set, so it used the fallback. By adding <code>ENV DATABASE_NAME=book_store</code> to your Dockerfile, you're overriding that default.</p>
+
+  <h3>What "baked in" actually means</h3>
+
+  <p>When you run <code>docker build</code>, Docker executes each line of your Dockerfile in sequence and commits the result as a layer. The <code>ENV</code> lines become part of the image itself — you can inspect them later with <code>docker inspect &lt;image-name&gt;</code>.</p>
+
+  <p>This is also why <strong>you shouldn't bake in secrets</strong> — anyone with access to the image can read them, even if you deleted the variable in a later layer.</p>
+
+  <h3>Multiple variables at once</h3>
+
+  <p>You can set several on one line, which is slightly cleaner:</p>
+
+<pre><span class="keyword">ENV</span> <span class="value">DATABASE_NAME</span>=book_store \
+    <span class="value">DATABASE_HOST</span>=db</pre>
+
+  <h3>The practical upshot for your project</h3>
+
+  <p>Your Dockerfile probably already has a <code>FROM</code> line, a <code>COPY</code>, and a <code>RUN</code>. You just need to add two <code>ENV</code> lines somewhere before the <code>CMD</code> at the end:</p>
+
+<pre><span class="keyword">FROM</span> python:3.11
+<span class="keyword">WORKDIR</span> /app
+<span class="keyword">COPY</span> . .
+<span class="keyword">RUN</span> pip install -r requirements.txt
+
+<span class="keyword">ENV</span> <span class="value">DATABASE_NAME</span>=book_store
+<span class="keyword">ENV</span> <span class="value">DATABASE_HOST</span>=db
+
+<span class="keyword">CMD</span> [<span class="string">"python"</span>, <span class="string">"app.py"</span>]</pre>
+
+  <p>After rebuilding the image (<code>docker build</code>), any container you run from it will automatically connect to the right database — no extra flags needed.</p>
+
+</div>
+</body>
+</html>
